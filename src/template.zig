@@ -150,8 +150,18 @@ pub const Template = struct {
 
 const testing = std.testing;
 
+pub fn beginGroup(name: []const u8) void {
+    std.debug.print("::group::test/{s}\n", .{name});
+}
+
+pub fn endGroup() void {
+    std.debug.print("::endgroup\n", .{});
+}
+
 test "load" {
-    const row = @embedFile("examples/index.htpl");
+    beginGroup("load");
+    defer endGroup();
+    const row = @embedFile("./templates/index.htpl");
     var index = try Template.load(row, testing.io, testing.allocator);
     defer index.unload();
 
@@ -162,7 +172,9 @@ test "load" {
 }
 
 test "set" {
-    const row = @embedFile("examples/index.htpl");
+    beginGroup("set");
+    defer endGroup();
+    const row = @embedFile("./templates/index.htpl");
     var index = try Template.load(row, testing.io, testing.allocator);
     defer index.unload();
 
@@ -171,11 +183,13 @@ test "set" {
 }
 
 test "generate" {
-    const index = @embedFile("examples/index.htpl");
+    beginGroup("generate");
+    defer endGroup();
+    const index = @embedFile("./templates/index.htpl");
     var index_t = try Template.load(index, testing.io, testing.allocator);
     defer index_t.unload();
 
-    const login = @embedFile("./examples/login.htpl");
+    const login = @embedFile("./templates/login.htpl");
     var login_t = try Template.load(login, testing.io, testing.allocator);
     defer login_t.unload();
 
@@ -191,6 +205,8 @@ test "generate" {
 }
 
 test "generate data" {
+    beginGroup("load");
+    defer endGroup();
     const User = struct {
         name: []const u8,
         age: u32,
@@ -200,11 +216,11 @@ test "generate data" {
         .name = "Someone",
         .age = 13,
     };
-    const index = @embedFile("examples/index.htpl");
+    const index = @embedFile("./templates/index.htpl");
     var index_t = try Template.load(index, testing.io, testing.allocator);
     defer index_t.unload();
 
-    const login = @embedFile("./examples/login.htpl");
+    const login = @embedFile("./templates/login.htpl");
     var login_t = try Template.load(login, testing.io, testing.allocator);
     defer login_t.unload();
 
