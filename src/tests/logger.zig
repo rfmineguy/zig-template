@@ -56,6 +56,13 @@ pub const TestCtx = struct {
         return writer;
     }
 
+    pub fn copyToTestDir(self: @This(), filename: []const u8, content: []const u8) !void {
+        try self.dir.writeFile(self.io, .{
+            .sub_path = filename,
+            .data = content,
+        });
+    }
+
     pub fn begin(writer: *std.Io.File.Writer, group: []const u8) !void {
         try writer.interface.print("::group::{s}\n", .{group});
         try writer.interface.flush();
@@ -69,6 +76,26 @@ pub const TestCtx = struct {
     pub fn log(writer: *std.Io.File.Writer, comptime fmt: []const u8, args: anytype) !void {
         try writer.interface.print(fmt, args);
         try writer.interface.flush();
+    }
+
+    pub fn expectFilesEqual(self: @This(), expected: []const u8, actual: []const u8) !void {
+        const expected_data = try self.dir.readFileAlloc(
+            self.io,
+            expected,
+            std.testing.allocator,
+            .unlimited,
+        );
+        defer std.testing.allocator.free(expected_data);
+
+        const actual_data = try self.dir.readFileAlloc(
+            self.io,
+            actual,
+            std.testing.allocator,
+            .unlimited,
+        );
+        defer std.testing.allocator.free(actual_data);
+
+        try std.testing.expectEqualStrings(expected_data, actual_data);
     }
 };
 
