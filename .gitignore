@@ -2,3 +2,5 @@
 .zig-out/
 .zig-pkg/
 zig-out/
+/tests/
+**/.DS_Store
