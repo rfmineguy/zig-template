@@ -1,9 +1,11 @@
 const std = @import("std");
 const Io = std.Io;
 
-const Template = @import("template.zig").Template;
+// const zt = @import("zig_template");
+// const Template = @import("template.zig").Template;
 
 const zig_template = @import("zig_template");
+const Template = zig_template.Template;
 
 pub fn main(init: std.process.Init) !void {
     // const row = @embedFile("./examples/row.htpl");
