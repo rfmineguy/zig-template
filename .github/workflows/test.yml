@@ -1,0 +1,38 @@
+name: Build & Test zig-template
+
+on:
+  workflow_call:
+    inputs:
+      os:
+        required: true
+        type: string
+
+jobs:
+  test:
+    runs-on: ${{ inputs.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Zig
+        uses: mlugg/setup-zig@v2
+        with:
+          version: 0.16.0
+
+      - name: Check C compiler
+        shell: bash
+        run: |
+          zig version
+          zig cc --version
+          printf '#include <ctype.h>\nint main(void) {}\n' > test.c
+          zig cc -E test.c
+
+      - name: Run tests
+        run: zig build test   # note: generates artifacts in ./tests/<uuid>
+
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: test-results
+          path: tests/
