@@ -1,8 +1,9 @@
 const std = @import("std");
 const testing = std.testing;
 const zt = @import("zt");
-const TestCtx = @import("tests").TestCtx;
+const TestCtxFn = @import("tests").TestCtx;
 
+const TestCtx = TestCtxFn("basic");
 test "load" {
     var ctx = try TestCtx.init(std.testing.io, "load");
     defer ctx.deinit();
