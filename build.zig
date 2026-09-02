@@ -1,5 +1,32 @@
 const std = @import("std");
 
+const TestCreateOptions = struct {
+    path: []const u8,
+    target: std.Build.ResolvedTarget,
+    optimize: std.builtin.OptimizeMode,
+    zt_mod: *std.Build.Module,
+    test_mod: *std.Build.Module,
+};
+
+fn create_test(b: *std.Build, options: TestCreateOptions) *std.Build.Step.Compile {
+    return b.addTest(.{
+        .root_module = b.createModule(.{
+        .root_source_file = b.path(options.path),
+        .target = options.target,
+        .optimize = options.optimize,
+        .imports = &.{
+            .{
+                .name = "zt",
+                .module = options.zt_mod,
+            },
+            .{
+                .name = "tests",
+                .module = options.test_mod,
+            }
+        },
+    })});
+}
+
 pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
@@ -41,26 +68,14 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    const basic_tests = b.addTest(.{
-        .root_module = b.createModule(.{
-            .root_source_file = b.path("src/tests/basic/test.zig"),
-            .target = target,
-            .optimize = optimize,
-            .imports = &.{
-                .{
-                    .name = "zt",
-                    .module = mod,
-                },
-                .{
-                    .name = "tests",
-                    .module = test_mod,
-                }
-            },
-        }),
+    const basic_tests = create_test(b, .{
+        .path = "src/tests/basic/test.zig",
+        .test_mod = test_mod,
+        .zt_mod = mod,
+        .optimize = optimize,
+        .target = target,
     });
-    
     basic_tests.root_module.addIncludePath(b.path("src/tests/basic"));
-    
     const run_basic = b.addRunArtifact(basic_tests);
 
     const test_step = b.step("test", "Run tests");
