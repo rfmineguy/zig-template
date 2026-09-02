@@ -68,16 +68,16 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    const basic_tests = create_test(b, .{
-        .path = "src/tests/basic/test.zig",
+    const tests = create_test(b, .{
+        .path = "src/tests/tests.zig",
         .test_mod = test_mod,
         .zt_mod = mod,
         .optimize = optimize,
         .target = target,
     });
-    basic_tests.root_module.addIncludePath(b.path("src/tests/basic"));
-    const run_basic = b.addRunArtifact(basic_tests);
+    tests.root_module.addIncludePath(b.path("src/tests/basic"));
+    const run_tests = b.addRunArtifact(tests);
 
     const test_step = b.step("test", "Run tests");
-    test_step.dependOn(&run_basic.step);
+    test_step.dependOn(&run_tests.step);
 }
