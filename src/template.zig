@@ -24,8 +24,8 @@ pub const SlotData = union(enum) {
 };
 
 pub const Location = struct {
-    start: u32,
-    end: u32,
+    start: usize,
+    end: usize,
 };
 
 pub const Slot = struct {
@@ -45,7 +45,7 @@ pub const Template = struct {
         directive,
     };
 
-    fn isDirectiveCh(comptime ch: u8) bool {
+    fn isDirectiveCh(ch: u8) bool {
         return (ch >= '0' and ch <= '9') or
                (ch >= 'a' and ch <= 'z') or
                (ch >= 'A' and ch <= 'Z') or
@@ -63,7 +63,7 @@ pub const Template = struct {
 
         var state: State = .normal;
         var d_loc: Location = .{.start = 0, .end = 0};
-        inline for (str, 0..) |ch, i| {
+        for (str, 0..) |ch, i| {
             if (state == .normal) {
                 if (ch == '.') {
                     state = .directive;
@@ -114,14 +114,8 @@ pub const Template = struct {
         try v.Data.?.append(self.alloc, slot);
     }
 
-    pub fn embed(self: @This(), id: []const u8) ?Embed {
-        _ = self;
-        _ = id;
-        return null;
-    }
-
     pub fn generate(self: @This(), writer: *std.Io.Writer) !void {
-        var idx: u32 = 0;
+        var idx: usize = 0;
         for (self.slots_list.items) |slot| {
             for (idx..slot.Loc.start) |i| {
                 try writer.printAsciiChar(self.str[i], .{});
