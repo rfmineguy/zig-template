@@ -49,11 +49,11 @@ pub const TestCtx = struct {
     }
 
     pub fn file(self: @This(), filename: []const u8, buf: []u8) !std.Io.File.Writer {
-        var f = try self.dir.createFile(self.io, filename, .{});
-        const len = (try f.stat(self.io)).size;
-        var writer = f.writer(self.io, buf);
-        try writer.seekTo(len);
-        return writer;
+        var f = try self.dir.createFile(self.io, filename, .{
+            .truncate = false,
+            .read = true,
+        });
+        return f.writer(self.io, buf);
     }
 
     pub fn copyToTestDir(self: @This(), filename: []const u8, content: []const u8) !void {
