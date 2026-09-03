@@ -66,6 +66,7 @@ pub const Template = struct {
         for (str, 0..) |ch, i| {
             if (state == .normal) {
                 if (ch == '.') {
+                    if (i + 1 < str.len and !isDirectiveCh(str[i + 1])) continue;
                     state = .directive;
                     d_loc.start = i;
                 }
