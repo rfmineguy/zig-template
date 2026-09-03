@@ -96,6 +96,9 @@ test "generate w/ data" {
     try login_t.set(".username", .{ .String = user.name });
     try login_t.set(".age",      .{ .Number = user.age });
     try index_t.set(".rows",     .{ .Embed = &login_t });
+
+    try index_t.set(".header",   .{ .String = "Hello" });
+    try index_t.set(".some-content", .{ .String = "Content" });
     
     try TestCtx.begin(&logger, "generate ./template.htpl with embed ./data_template.htpl (see output artifact)");
     defer TestCtx.end(&logger) catch {};
