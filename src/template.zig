@@ -118,21 +118,23 @@ pub const Template = struct {
     pub fn generate(self: @This(), writer: *std.Io.Writer) !void {
         var idx: usize = 0;
         for (self.slots_list.items) |slot| {
+            if (slot.Data == null) continue;
             for (idx..slot.Loc.start) |i| {
                 try writer.printAsciiChar(self.str[i], .{});
             }
             idx = slot.Loc.end;
-            if (slot.Data == null) continue;
-            for (slot.Data.?.items) |s| {
-                switch (s) {
-                    .String => |v| {
-                        try writer.print("{s}", .{v});
-                    },
-                    .Number => |n| {
-                        try writer.print("{d}", .{n});
-                    },
-                    .Embed => |template| {
-                        try template.generate(writer);
+            if (slot.Data) |d| {
+                for (d.items) |s| {
+                    switch (s) {
+                        .String => |v| {
+                            try writer.print("{s}", .{v});
+                        },
+                        .Number => |n| {
+                            try writer.print("{d}", .{n});
+                        },
+                        .Embed => |template| {
+                            try template.generate(writer);
+                        }
                     }
                 }
             }
