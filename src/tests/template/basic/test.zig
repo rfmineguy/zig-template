@@ -3,7 +3,7 @@ const testing = std.testing;
 const zt = @import("zt");
 const TestCtxFn = @import("tests").TestCtx;
 
-const TestCtx = TestCtxFn("basic");
+const TestCtx = TestCtxFn("template/basic");
 test "load" {
     var ctx = try TestCtx.init(std.testing.io, "load");
     defer ctx.deinit();
