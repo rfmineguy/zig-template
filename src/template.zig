@@ -144,3 +144,43 @@ pub const Template = struct {
         }
     }
 };
+
+pub const TemplateStore = struct {
+    alloc: std.mem.Allocator,
+    io: std.Io,
+
+    store: std.StringHashMap(Template),
+
+    pub fn init(io: std.Io, alloc: std.mem.Allocator) @This() {
+        return @This() {
+            .alloc = alloc,
+            .io = io,
+            .store = .init(alloc),
+        };
+    }
+
+    pub fn deinit(self: *@This()) void {
+        var it = self.store.iterator();
+        while (it.next()) |*e| {
+            e.value_ptr.unload();
+        }
+        self.store.deinit();
+    }
+
+    pub fn load(self: *@This(), comptime str: []const u8, comptime as: []const u8) !*Template {
+        if (self.store.getPtr(as)) |t| return t;
+        try self.store.put(as, try Template.load(str, self.io, self.alloc));
+        return try self.load(str, as);
+    }
+
+    pub fn unload(self: *@This(), comptime str: []const u8) void {
+        if (self.store.getPtr(str)) |t| {
+            t.unload();
+            self.store.remove(str);
+        }
+    }
+
+    pub fn get(self: *@This(), comptime str: []const u8) ?*Template {
+        return self.store.getPtr(str);
+    }
+};
