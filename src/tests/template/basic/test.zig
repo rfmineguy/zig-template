@@ -160,3 +160,38 @@ test "generate w/ unset field" {
         return error.MismatchedOutputs;
     };
 }
+
+test "set multiple times" {
+    var ctx = try TestCtx.init(std.testing.io, "set_multiple_times");
+    defer ctx.deinit();
+    var logger = try ctx.logger();
+    defer logger.flush() catch {};
+    defer logger.file.close(std.testing.io);
+
+    const index = @embedFile("./template.htpl");
+    var index_t = try zt.Template.load(index, testing.io, testing.allocator);
+    defer index_t.unload();
+
+    try index_t.set(".some-class", .{ .Number = 3 });
+    try index_t.set(".some-class", .{ .String = "card" });
+    try index_t.set(".header", .{ .Number = 3 });
+    try index_t.set(".header", .{ .String = "header!!!" });
+
+    {
+        try TestCtx.begin(&logger, "generate ./template.htpl with multiple .some-class sets (see output artifact)");
+        defer TestCtx.end(&logger) catch {};
+
+        var buf: [1024]u8 = undefined;
+        var writer = try ctx.file("template.actual.set_multiple_times.html", &buf);
+        defer writer.file.close(testing.io);
+        defer writer.flush() catch {};
+        try index_t.generate(&writer.interface);
+    }
+
+    try ctx.copyToTestDir("template.expected.set_multiple_times.html", @embedFile("./template.expected.set_multiple_times.html"));
+
+    ctx.expectFilesEqual("template.expected.set_multiple_times.html", "template.actual.set_multiple_times.html") catch {
+        try TestCtx.log(&logger, "  generated and expected files do not match", .{});
+        return error.MismatchedOutputs;
+    };
+}

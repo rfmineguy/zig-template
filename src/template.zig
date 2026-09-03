@@ -102,7 +102,12 @@ pub const Template = struct {
         if (v.Data == null) v.Data = try .initCapacity(self.alloc, 1);
 
         // if set called, element 0 is main
-        try v.Data.?.append(self.alloc, slot);
+        if (v.Data.?.items.len == 1) {
+            v.Data.?.items[0] = slot;
+        }
+        else {
+            try v.Data.?.append(self.alloc, slot);
+        }
     }
 
     pub fn append(self: @This(), id: []const u8, slot: SlotData) !void {
