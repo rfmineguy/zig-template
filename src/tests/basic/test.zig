@@ -17,7 +17,7 @@ test "load" {
         defer tpl_.unload();
         var it = tpl_.slots_map.iterator();
         while (it.next()) |v| {
-            try TestCtx.log(&logger, "{s}: {any}", .{v.key_ptr.*, v.value_ptr.*});
+            try TestCtx.log(&logger, "{s}: {any}\n", .{v.key_ptr.*, v.value_ptr.*});
         }
     }
 }
@@ -34,6 +34,11 @@ test "set" {
         const row = @embedFile("./template.htpl");
         var index = try zt.Template.load(row, testing.io, testing.allocator);
         defer index.unload();
+
+        var it = index.slots_map.iterator();
+        while (it.next()) |v| {
+            try TestCtx.log(&logger, "{s}: {any}\n", .{v.key_ptr.*, v.value_ptr.*});
+        }
 
         try testing.expectError(error.NoSlotWithId, index.set("adf", .{ .String = "hello" }));
         try index.set(".some-class", .{ .String = "Hello" });
