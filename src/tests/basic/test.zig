@@ -118,3 +118,40 @@ test "generate w/ data" {
         return error.MismatchedOutputs;
     };
 }
+
+test "generate w/ unset field" {
+    var ctx = try TestCtx.init(std.testing.io, "generate_w_unset_field");
+    defer ctx.deinit();
+    var logger = try ctx.logger();
+    defer logger.flush() catch {};
+    defer logger.file.close(std.testing.io);
+
+    const index = @embedFile("./template.htpl");
+    var index_t = try zt.Template.load(index, testing.io, testing.allocator);
+    defer index_t.unload();
+
+    const login = @embedFile("./data_template.htpl");
+    var login_t = try zt.Template.load(login, testing.io, testing.allocator);
+    defer login_t.unload();
+
+    try login_t.set(".age",      .{ .Number = 3 });
+    try index_t.set(".rows",     .{ .Embed = &login_t });
+    
+    try TestCtx.begin(&logger, "generate ./template.htpl with embed ./data_template.htpl (see output artifact)");
+    defer TestCtx.end(&logger) catch {};
+
+    {
+        var buf: [1024]u8 = undefined;
+        var writer = try ctx.file("template.actual.generate_w_unset_field.html", &buf);
+        defer writer.file.close(testing.io);
+        defer writer.flush() catch {};
+        try index_t.generate(&writer.interface);
+    }
+
+    try ctx.copyToTestDir("template.expected.generate_w_unset_field.html", @embedFile("./template.expected.generate_w_unset_field.html"));
+
+    ctx.expectFilesEqual("template.expected.generate_w_unset_field.html", "template.actual.generate_w_unset_field.html") catch {
+        try TestCtx.log(&logger, "  generated and expected files do not match", .{});
+        return error.MismatchedOutputs;
+    };
+}
