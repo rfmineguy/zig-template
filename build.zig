@@ -76,6 +76,7 @@ pub fn build(b: *std.Build) void {
         .target = target,
     });
     tests.root_module.addIncludePath(b.path("src/tests/basic"));
+    tests.root_module.addIncludePath(b.path("src/tests/login_page"));
     const run_tests = b.addRunArtifact(tests);
 
     const test_step = b.step("test", "Run tests");
